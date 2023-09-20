@@ -38,7 +38,7 @@ const map = [
 	"                                                ",
 	"  #                                             ",
 	"                                                ",
-	"                       #                        ",
+	"  #                    #                        ",
 	"################################################",
 ];
 
@@ -47,7 +47,7 @@ const heroFunctions = {isHeroOnGround, isHeroCollideFromLeft, isHeroCollideFromR
 const canvas = document.querySelector('.canvas');
 const context = canvas.getContext("2d");
 const field = new Field(map, 40, 40);
-const hero = new Unit(1 * field.tileWidth, 8 * field.tileHeight, field.tileWidth, field.tileHeight, {x: 0, y: 0}, {x: 3, y: 3}, 170, 5, 5, heroFunctions);
+const hero = new Unit(1 * field.tileWidth, 8 * field.tileHeight, field.tileWidth - 10, field.tileHeight, {x: 0, y: 0}, {x: 3, y: 3}, 170, 5, 5, heroFunctions);
 const downKeys = new Set();
 
 canvas.width = window.innerWidth;
@@ -58,7 +58,7 @@ context.fillStyle = "#ff8c00";
 
 window.addEventListener("keydown", (event) => {
 	console.log("DOWN");
-	downKeys.add(event.keyCode);
+	downKeys.add(event.keyCode)
 });
 
 window.addEventListener("keyup", (event) => {
