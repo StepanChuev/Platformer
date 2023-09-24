@@ -1,94 +1,94 @@
 'use strict';
 
-const isHeroOnGround = () => {
-	const a = (hero.y + (hero.height - field.tileHeight));
+const isOnGround = (unit, field, map) => () => {
+	const a = (unit.y + (unit.height - field.tileHeight));
 
 	if (
-		(map[Math.floor(a / field.tileHeight) + 1][Math.floor(hero.x / field.tileWidth)] === "#" || 
-		map[Math.floor(a / field.tileHeight) + 1][Math.floor((hero.x + hero.width) / field.tileWidth)] === "#") &&
+		(map[Math.floor(a / field.tileHeight) + 1][Math.floor(unit.x / field.tileWidth)] === "#" || 
+		map[Math.floor(a / field.tileHeight) + 1][Math.floor((unit.x + unit.width) / field.tileWidth)] === "#") &&
 		Math.floor(a / field.tileHeight) === a / field.tileHeight
 		)
 	{
-		return true; // map[Math.floor(hero.y / field.tileHeight) + 1][Math.floor(hero.x / field.tileWidth)] === "#"
+		return true; // map[Math.floor(unit.y / field.tileHeight) + 1][Math.floor(unit.x / field.tileWidth)] === "#"
 	}
 
 	return false;
 };
 
-const isHeroCollideFromLeft = () => {
-	return map[Math.floor((hero.y + hero.height - 1) / field.tileHeight)][Math.floor((hero.x - 1) / field.tileWidth)] === "#";
+const isCollideFromLeft = (unit, field, map) => () => {
+	return map[Math.floor((unit.y + unit.height - 1) / field.tileHeight)][Math.floor((unit.x - 1) / field.tileWidth)] === "#";
 };
 
-const isHeroCollideFromRight = () => {
-	return map[Math.floor((hero.y + hero.height - 1) / field.tileHeight)][Math.floor((hero.x + hero.width + 1) / field.tileWidth)] === "#";
+const isCollideFromRight = (unit, field, map) => () => {
+	return map[Math.floor((unit.y + unit.height - 1) / field.tileHeight)][Math.floor((unit.x + unit.width + 1) / field.tileWidth)] === "#";
 };
 
-const heroRun = (keyCode) => {
-	if (keyCode === 37 && !isHeroCollideFromLeft()){
-		hero.currentSpeed.x = -hero.maxSpeed.x;
-		hero.x += hero.currentSpeed.x;
+const run = (unit, field, map) => (keyCode) => {
+	if (keyCode === 37 && !isCollideFromLeft(unit, field, map)()){
+		unit.currentSpeed.x = -unit.maxSpeed.x;
+		unit.x += unit.currentSpeed.x;
 	}
 
-	if (keyCode === 39 && !isHeroCollideFromRight()){
-		hero.currentSpeed.x = hero.maxSpeed.x;
-		hero.x += hero.currentSpeed.x;
+	if (keyCode === 39 && !isCollideFromRight(unit, field, map)()){
+		unit.currentSpeed.x = unit.maxSpeed.x;
+		unit.x += unit.currentSpeed.x;
 	}
 
 	else {
-		hero.currentSpeed.x = 0;
+		unit.currentSpeed.x = 0;
 	}
 };
 
-const heroFall = () => {
-	if (!isHeroOnGround()){
-		hero.currentSpeed.y = (hero.currentSpeed.y >= hero.maxSpeedFall) ? hero.maxSpeedFall : hero.currentSpeed.y + hero.jumpSlowdown;
-		hero.y += hero.currentSpeed.y;
+const fall = (unit, field, map) => () => {
+	if (!isOnGround(unit, field, map)()){
+		unit.currentSpeed.y = (unit.currentSpeed.y >= unit.maxSpeedFall) ? unit.maxSpeedFall : unit.currentSpeed.y + unit.jumpSlowdown;
+		unit.y += unit.currentSpeed.y;
 
-		const a = hero.y;
-		hero.y = Math.floor((hero.y + (hero.height - field.tileHeight)) / field.tileHeight) * field.tileHeight - (hero.height - field.tileHeight);
+		const a = unit.y;
+		unit.y = Math.floor((unit.y + (unit.height - field.tileHeight)) / field.tileHeight) * field.tileHeight - (unit.height - field.tileHeight);
 
-		if (isHeroOnGround() && hero.currentSpeed.y > 0){
-			hero.currentSpeed.y = 0;
-			hero.walkedJumpPath = 0;
-			hero.amountJumps = 0;
+		if (isOnGround(unit, field, map)() && unit.currentSpeed.y > 0){
+			unit.currentSpeed.y = 0;
+			unit.walkedJumpPath = 0;
+			unit.amountJumps = 0;
 		}
 
 		else {
-			hero.y = a;
+			unit.y = a;
 		}
 	}
 
 	else {
-		hero.currentSpeed.y = 0;
-		hero.walkedJumpPath = 0;
-		hero.amountJumps = 0;
+		unit.currentSpeed.y = 0;
+		unit.walkedJumpPath = 0;
+		unit.amountJumps = 0;
 	}
 };
 
-const heroJump = (keyCode, deltaTime) =>{
+const jump = (unit, field, map) => (keyCode, deltaTime) => {
 	if (
-		keyCode === 32 && (isHeroOnGround() || 
-		(hero.amountJumps < hero.maxAmountJumps && hero.walkedJumpPath < hero.maxWalkedJumpPath && (hero.currentSpeed.y < 0 || deltaTime < hero.maxDeltaTime)))
+		keyCode === 32 && (isOnGround(unit, field, map)() || 
+		(unit.amountJumps < unit.maxAmountJumps && unit.walkedJumpPath < unit.maxWalkedJumpPath && (unit.currentSpeed.y < 0 || deltaTime < unit.maxDeltaTime)))
 		)
 	{
-		hero.currentSpeed.y = -hero.jumpPower;
-		hero.y += hero.currentSpeed.y;
-		hero.amountJumps++;
+		unit.currentSpeed.y = -unit.jumpPower;
+		unit.y += unit.currentSpeed.y;
+		unit.amountJumps++;
 	}
 };
 
-const heroWalkedJumpPath = () => {
-	if (hero.currentSpeed.y > 0){
-		hero.walkedJumpPath = 0;
+const walkedJumpPath = (unit, field, map) => () => {
+	if (unit.currentSpeed.y > 0){
+		unit.walkedJumpPath = 0;
 	}
 
-	else if (hero.currentSpeed.y < 0){
-		hero.walkedJumpPath += Math.abs(hero.currentSpeed.y);
+	else if (unit.currentSpeed.y < 0){
+		unit.walkedJumpPath += Math.abs(unit.currentSpeed.y);
 	}
 };
 
-const heroCalculateShiftX = (displayWidth = 0) => {
-	const newShiftX = cameraShiftX(hero.x, -200, displayWidth, field.map[0].length * field.tileHeight);
+const calculateShiftX = (unit, field, map) => (displayWidth = 0) => {
+	const newShiftX = cameraShiftX(unit.x, -200, displayWidth, field.map[0].length * field.tileHeight);
 
 	if (newShiftX < 0 && displayWidth + Math.abs(newShiftX) < field.map[0].length * field.tileWidth){
 		return newShiftX;

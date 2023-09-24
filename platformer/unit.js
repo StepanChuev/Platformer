@@ -1,11 +1,13 @@
 'use strict';
 
 class Unit {
-	constructor({x, y, width, height, currentSpeed, maxSpeed, jumpPower, maxSpeedJump, maxWalkedJumpPath, maxAmountJumps, maxDeltaTime, jumpSlowdown, maxSpeedFall, updateFunctions = {}}){
+	constructor({x, y, width, height, strokeStyle, fillStyle, currentSpeed, maxSpeed, jumpPower, maxSpeedJump, maxWalkedJumpPath, maxAmountJumps, maxDeltaTime, jumpSlowdown, maxSpeedFall, health, updateFunctions = {}}){
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
+		this.strokeStyle = strokeStyle;
+		this.fillStyle = fillStyle;
 		this.currentSpeed = currentSpeed;
 		this.maxSpeed = maxSpeed;
 		this.jumpPower = jumpPower;
@@ -17,6 +19,7 @@ class Unit {
 		this.jumpSlowdown = jumpSlowdown;
 		this.walkedJumpPath = 0;
 		this.maxSpeedFall = maxSpeedFall;
+		this.health = health;
 		this.updateFunctions = updateFunctions;
 	}
 
