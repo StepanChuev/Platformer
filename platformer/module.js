@@ -26,3 +26,13 @@ const drawField = (shiftX = 0, shiftY = 0) => {
 		}
 	}
 };
+
+const drawBullets = (weapon, shiftX = 0, shiftY = 0) => {
+	context.fillStyle = weapon.colorBullets;
+
+	for (let i = 0; i < weapon.bullets.length; i++){
+		context.beginPath();
+		context.arc(weapon.bullets[i].x + shiftX, weapon.bullets[i].y + shiftY, 5, 0, Math.PI * 2);
+		context.fill();
+	}
+};
