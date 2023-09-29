@@ -23,6 +23,22 @@ const isCollideFromRight = (unit, field, map) => () => {
 	return map[Math.floor((unit.y + unit.height - 1) / field.tileHeight)][Math.floor((unit.x + unit.width + 1) / field.tileWidth)] === "#";
 };
 
+const isCollideWithEnemy = (unit, field, map) => (enemy) => {
+	if (enemy === undefined){
+		return false;
+	}
+
+	if (
+		unit.x + unit.width >= enemy.x && unit.x <= enemy.x + enemy.width &&
+		unit.y + unit.height >= enemy.y && unit.y <= enemy.y + enemy.height
+		)
+	{
+		return true;
+	}
+
+	return false;
+};
+
 const run = (unit, field, map) => (keyCode) => {
 	if (keyCode === 37 && !isCollideFromLeft(unit, field, map)()){
 		unit.currentSpeed.x = -unit.maxSpeed.x;
@@ -99,4 +115,15 @@ const calculateShiftX = (unit, field, map) => (displayWidth = 0) => {
 	}
 
 	return Infinity;
+};
+
+
+const getUpdateFunctions = (unit, field, map) => {
+	return {
+		isOnGround: isOnGround(unit, field, map), isCollideFromLeft: isCollideFromLeft(unit, field, map), 
+		isCollideFromRight: isCollideFromRight(unit, field, map), isCollideWithEnemy: isCollideWithEnemy(unit, field, map),
+		run: run(unit, field, map), fall: fall(unit, field, map), 
+		jump: jump(unit, field, map), walkedJumpPath: walkedJumpPath(unit, field, map), 
+		calculateShiftX: calculateShiftX(unit, field, map)
+	};
 };

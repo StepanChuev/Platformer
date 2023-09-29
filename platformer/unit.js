@@ -5,7 +5,7 @@ class Unit {
 		{	
 			x, y, width, height, strokeStyle, fillStyle, currentSpeed, maxSpeed, 
 			jumpPower, maxSpeedJump, maxWalkedJumpPath, maxAmountJumps, maxDeltaTime, jumpSlowdown, 
-			maxSpeedFall, health, weapon, updateFunctions = {}
+			maxSpeedFall, health, weapon, enemies, updateFunctions = {}, otherParams = {}
 		}
 		){
 		this.x = x;
@@ -27,7 +27,9 @@ class Unit {
 		this.maxSpeedFall = maxSpeedFall;
 		this.health = health;
 		this.weapon = weapon;
+		this.enemies = enemies;
 		this.updateFunctions = updateFunctions;
+		this.otherParams = otherParams;
 	}
 
 	update(){

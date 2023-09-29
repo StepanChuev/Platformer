@@ -19,4 +19,20 @@ class Bullet {
 		this.x += this.vx;
 		this.y += this.vy;
 	}
+
+	isHitEnemy(enemy){
+		if (
+			enemy.x + enemy.width >= this.x && enemy.x <= this.x &&
+			enemy.y + enemy.height >= this.y && enemy.y <= this.y
+			)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	hitEnemy(enemy){
+		return enemy.health -= this.damage;
+	}
 }

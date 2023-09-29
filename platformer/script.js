@@ -35,35 +35,79 @@ canvas.height = window.innerHeight;
 context.lineWidth = 3;
 context.strokeStyle = "#000";
 context.fillStyle = "#ff8c00";
+context.font = "24px Cambria";
 
 const field = new Field(map, 40, 40);
-const hero = new Unit({
+
+const units = {};
+
+units.hero = new Unit({
 	x: 1 * field.tileWidth, y: 8 * field.tileHeight, width: field.tileWidth - 10, height: field.tileHeight, 
 	strokeStyle: "#000", fillStyle: "#0000cd",
 	currentSpeed: {x: 0, y: 0}, maxSpeed: {x: 3, y: 3}, 
 	jumpPower: 30, maxSpeedJump: 170, maxWalkedJumpPath: Infinity, maxAmountJumps: 2, 
 	maxDeltaTime: 300, jumpSlowdown: 5, maxSpeedFall: 7, health: 100,
-	weapon: new Weapon(0.07, 10, field.tileWidth * map[0].length, field.tileHeight * map.length, "#808080", "#000")
+	weapon: new Weapon(0.07, 10, field.tileWidth * map[0].length, field.tileHeight * map.length, [], "#000"),
+	enemies: []
 });
 
-const heroFunctions = {
-	isOnGround: isOnGround(hero, field, map), isCollideFromLeft: isCollideFromLeft(hero, field, map), 
-	isCollideFromRight: isCollideFromRight(hero, field, map), 
-	run: run(hero, field, map), fall: fall(hero, field, map), 
-	jump: jump(hero, field, map), walkedJumpPath: walkedJumpPath(hero, field, map), 
-	calculateShiftX: calculateShiftX(hero, field, map)
+units.hero.weapon.enemies = units.hero.enemies;
+
+const heroFunctions = getUpdateFunctions(units.hero, field, map);
+
+units.hero.updateFunctions = heroFunctions;
+
+units.walkingMine1 = new Unit({
+	x: 1 * field.tileWidth, y: 15 * field.tileHeight + 15, width: field.tileWidth, height: field.tileHeight - 15, 
+	strokeStyle: "#000", fillStyle: "#ff0",
+	currentSpeed: {x: 0, y: 0}, maxSpeed: {x: 3, y: 3}, 
+	jumpPower: 30, maxSpeedJump: 170, maxWalkedJumpPath: Infinity, maxAmountJumps: 2, 
+	maxDeltaTime: 300, jumpSlowdown: 5, maxSpeedFall: 7, health: 25,
+	weapon: new Weapon(0, 0, 0, 0, "#000"),
+	enemies: [units.hero, units.hero.weapon.bullets],
+	otherParams: {
+		damage: 10, damageRadius: 200, 
+		leftX: 0, rightX: 10 * field.tileWidth,
+		direction: "left"
+	}
+});
+
+units.walkingMine1.updateFunctions = {
+	...getUpdateFunctions(units.walkingMine1, field, map), 
+	...getWmUpdateFunctions(units.walkingMine1, units.walkingMine1.otherParams)
 };
 
-hero.updateFunctions = heroFunctions;
+units.walkingMine2 = new Unit({
+	x: 3 * field.tileWidth, y: 21 * field.tileHeight + 15, width: field.tileWidth, height: field.tileHeight - 15, 
+	strokeStyle: "#000", fillStyle: "#ff0",
+	currentSpeed: {x: 0, y: 0}, maxSpeed: {x: 3, y: 3}, 
+	jumpPower: 30, maxSpeedJump: 170, maxWalkedJumpPath: Infinity, maxAmountJumps: 2, 
+	maxDeltaTime: 300, jumpSlowdown: 5, maxSpeedFall: 7, health: 25,
+	weapon: new Weapon(0, 0, 0, 0, "#000"),
+	enemies: [units.hero, units.hero.weapon.bullets],
+	otherParams: {
+		damage: 100, damageRadius: 200, 
+		leftX: 3 * field.tileWidth, rightX: 10 * field.tileWidth,
+		direction: "left"
+	}
+});
+
+units.walkingMine2.updateFunctions = {
+	...getUpdateFunctions(units.walkingMine2, field, map), 
+	...getWmUpdateFunctions(units.walkingMine2, units.walkingMine2.otherParams)
+};
+
+units.hero.enemies.push(units.walkingMine1, units.walkingMine2);
 
 const downKeys = new Set();
 
+let isGameOver = false;
 let shiftX = 0, shiftY = 0;
 let timestamp = 0;
 
 window.addEventListener("keydown", (event) => {
 	if (event.key === " " && !downKeys.has(event.keyCode)){
-		heroFunctions.jump(event.keyCode, Date.now() - timestamp);
+		units.hero.updateFunctions.jump(event.keyCode, Date.now() - timestamp);
 		timestamp = Date.now();
 	}
 
@@ -77,37 +121,65 @@ window.addEventListener("keyup", (event) => {
 });
 
 canvas.addEventListener("click", (event) => {
-	hero.weapon.shot(hero.x, hero.y, event.layerX - shiftX, event.layerY - shiftY);
+	units.hero.weapon.shot(units.hero.x, units.hero.y, event.layerX - shiftX, event.layerY - shiftY);
 });
 
 animation({
 	render(){
+		if (isGameOver){
+			context.fillStyle = "rgba(0, 0, 0, 0.1)";
+
+			context.beginPath();
+			context.rect(0, 0, canvas.width, canvas.height);
+			context.fill();
+
+			console.log("Game Over");
+
+			return;
+		}
+
 		context.clearRect(0, 0, canvas.width, canvas.height);
 
-		drawField(shiftX, shiftY);
-		drawBullets(hero.weapon, shiftX, shiftY);
+		context.fillStyle = "#000";
 
-		context.strokeStyle = hero.strokeStyle;
-		context.fillStyle = hero.fillStyle;
+		context.fillText(`health: ${units.hero.health}`, canvas.width - 150, 40);
 
-		context.beginPath();
-		context.rect(hero.x + shiftX, hero.y + shiftY, hero.width, hero.height);
-		context.stroke();
-		context.fill();
+		drawField(units.hero, field, map, shiftX, shiftY);
+		drawBullets(units.hero.weapon, shiftX, shiftY);
+
+		context.strokeStyle = units.hero.strokeStyle;
+		context.fillStyle = units.hero.fillStyle;
+
+		for (let unitName in units){
+			drawUnit(units[unitName], field, map, shiftX, shiftY);
+			drawUnit(units[unitName], field, map, shiftX, shiftY);
+		}
 	},
 
 	update(){
-		for (const keyCode of downKeys){
-			hero.updateFunctions.run(keyCode);
+		if (isGameOver){
+			return;
 		}
 
-		hero.update();
-		hero.weapon.update();
-
-		const newShiftX = heroFunctions.calculateShiftX(canvas.width);
+		const newShiftX = units.hero.updateFunctions.calculateShiftX(canvas.width);
 
 		if (newShiftX !== Infinity){
 			shiftX = newShiftX;
+		}
+
+		for (const keyCode of downKeys){
+			units.hero.updateFunctions.run(keyCode);
+		}
+
+		for (let unitName in units){
+			units[unitName].update();
+
+			units[unitName].weapon.update(units[unitName].enemies);
+
+			if (units[unitName].health <= 0){
+				isGameOver = unitName === "hero";
+				delete units[unitName];
+			}
 		}
 
 		console.log(shiftX);
