@@ -52,10 +52,7 @@ units.hero = new Unit({
 });
 
 units.hero.weapon.enemies = units.hero.enemies;
-
-const heroFunctions = getUpdateFunctions(units.hero, field, map);
-
-units.hero.updateFunctions = heroFunctions;
+units.hero.updateFunctions = new UpdateFunctions(units.hero, field, map);
 
 units.walkingMine1 = new Unit({
 	x: 1 * field.tileWidth, y: 15 * field.tileHeight + 15, width: field.tileWidth, height: field.tileHeight - 15, 
@@ -73,8 +70,8 @@ units.walkingMine1 = new Unit({
 });
 
 units.walkingMine1.updateFunctions = {
-	...getUpdateFunctions(units.walkingMine1, field, map), 
-	...getWmUpdateFunctions(units.walkingMine1, units.walkingMine1.otherParams)
+	...(new UpdateFunctions(units.walkingMine1, field, map)), 
+	...(new WMUpdateFunctions(units.walkingMine1, units.walkingMine1.otherParams))
 };
 
 units.walkingMine2 = new Unit({
@@ -93,8 +90,8 @@ units.walkingMine2 = new Unit({
 });
 
 units.walkingMine2.updateFunctions = {
-	...getUpdateFunctions(units.walkingMine2, field, map), 
-	...getWmUpdateFunctions(units.walkingMine2, units.walkingMine2.otherParams)
+	...(new UpdateFunctions(units.walkingMine2, field, map)), 
+	...(new WMUpdateFunctions(units.walkingMine2, units.walkingMine2.otherParams))
 };
 
 units.hero.enemies.push(units.walkingMine1, units.walkingMine2);
